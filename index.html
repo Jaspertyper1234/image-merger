@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>图片合成工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert('发生错误: ' + message);
+            return true;
+        };
+    </script>
+</head>
+<body>
+    <div id="app">
+        <h1>图片合成工具</h1>
+        <div id="upload-section">
+            <input type="file" id="image-upload" multiple accept="image/*" capture="camera">
+            <button id="upload-btn">上传图片</button>
+        </div>
+        <div id="options-section">
+            <label for="merge-type">合成类型:</label>
+            <select id="merge-type">
+                <option value="2">2合1</option>
+                <option value="4">4合1</option>
+                <!-- 可以添加更多选项 -->
+            </select>
+            <label for="interval">间隔:</label>
+            <input type="number" id="interval" min="1" value="1">
+            <label for="spacing">间距:</label>
+            <input type="number" id="spacing" min="0" value="0">
+            <button id="merge-btn">合成图片</button>
+        </div>
+        <div id="preview-section">
+            <!-- 这里将显示合成后的图片预览 -->
+        </div>
+        <div id="export-section">
+            <button id="download-btn">下载图片</button>
+            <button id="export-excel-btn">导出Excel</button>
+            <button id="export-pdf-btn">导出PDF</button>
+        </div>
+        <div id="debug-info" style="display: none;"></div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // 添加调试信息
+        function addDebugInfo(info) {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML += info + '<br>';
+        }
+
+        // 在关键步骤添加调试信息
+        mergeBtn.addEventListener('click', () => {
+            addDebugInfo('合成按钮被点击');
+        });
+
+        // 在图片加载完成后添加调试信息
+        function handleFiles(files) {
+            // ... 原有的handleFiles代码 ...
+            addDebugInfo(`已上传 ${files.length} 张图片`);
+        }
+
+        // 添加iOS版本检测
+        function getiOSVersion() {
+            if (/iP(hone|od|ad)/.test(navigator.platform)) {
+                var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+                return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+            }
+            return null;
+        }
+        var iosVersion = getiOSVersion();
+        if (iosVersion) {
+            console.log('iOS version:', iosVersion.join('.'));
+            addDebugInfo('iOS version: ' + iosVersion.join('.'));
+        }
+    </script>
+</body>
+</html>
