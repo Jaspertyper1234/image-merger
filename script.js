@@ -8,13 +8,9 @@ let uploadedImages = [];
 
 // 上传按钮点击事件
 uploadBtn.addEventListener('click', () => {
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // 对于iOS设备，直接触发点击事件
-        imageUpload.click();
-    } else {
-        // 对于其他设备，保持原有行为
-        imageUpload.click();
-    }
+    console.log('Upload button clicked');
+    addDebugInfo('Upload button clicked');
+    imageUpload.click();
 });
 
 // 添加触摸事件监听
@@ -28,6 +24,8 @@ imageUpload.addEventListener('change', (event) => {
     console.log('File input change event triggered');
     addDebugInfo('File input change event triggered');
     const files = event.target.files;
+    console.log('Files:', files);
+    addDebugInfo(`Files: ${files ? files.length : 'none'}`);
     if (files && files.length > 0) {
         console.log(`Selected ${files.length} files`);
         addDebugInfo(`Selected ${files.length} files`);
@@ -40,6 +38,8 @@ imageUpload.addEventListener('change', (event) => {
 
 // 处理文件函数
 function handleFiles(files) {
+    console.log('Handling files:', files.length);
+    addDebugInfo(`Handling files: ${files.length}`);
     uploadedImages = Array.from(files);
     
     // 清空预览区域
@@ -47,13 +47,21 @@ function handleFiles(files) {
     
     // 显示上传的图片预览
     uploadedImages.forEach((image, index) => {
+        console.log(`Processing image ${index + 1}`);
+        addDebugInfo(`Processing image ${index + 1}`);
         const reader = new FileReader();
         reader.onload = (e) => {
+            console.log(`Image ${index + 1} loaded`);
+            addDebugInfo(`Image ${index + 1} loaded`);
             const img = document.createElement('img');
             img.src = e.target.result;
             img.alt = `Uploaded Image ${index + 1}`;
             img.classList.add('preview-image');
             previewSection.appendChild(img);
+        };
+        reader.onerror = (error) => {
+            console.error(`Error reading image ${index + 1}:`, error);
+            addDebugInfo(`Error reading image ${index + 1}: ${error}`);
         };
         reader.readAsDataURL(image);
     });
@@ -78,6 +86,11 @@ const mergeBtn = document.getElementById('merge-btn');
 
 // 合成按钮点击事件
 mergeBtn.addEventListener('click', async () => {
+    console.log('Merge button clicked');
+    addDebugInfo('Merge button clicked');
+    console.log('Uploaded images:', uploadedImages.length);
+    addDebugInfo(`Uploaded images: ${uploadedImages.length}`);
+
     const mergeType = parseInt(document.getElementById('merge-type').value);
     const interval = parseInt(document.getElementById('interval').value);
     const spacing = parseInt(document.getElementById('spacing').value);
@@ -85,6 +98,7 @@ mergeBtn.addEventListener('click', async () => {
     // 检查是否有足够的图片
     if (uploadedImages.length < mergeType) {
         alert('上传的图片数量不足，无法完成合成');
+        addDebugInfo('Not enough images for merging');
         return;
     }
     
@@ -94,27 +108,11 @@ mergeBtn.addEventListener('click', async () => {
     // 计算可以合成的组数
     const groupCount = Math.floor(uploadedImages.length / (mergeType * interval));
     
-    // 使用Promise来确保所有图片都加载完成
-    const loadImages = async (imagesToLoad) => {
-        const loadedImages = [];
-        for (const imageToLoad of imagesToLoad) {
-            const img = await createImage(URL.createObjectURL(imageToLoad));
-            loadedImages.push(img);
-        }
-        return loadedImages;
-    };
-
-    const createImage = (src) => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = src;
-        });
-    };
-
     try {
         for (let group = 0; group < groupCount; group++) {
+            console.log(`Processing group ${group + 1}`);
+            addDebugInfo(`Processing group ${group + 1}`);
+
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
@@ -124,13 +122,14 @@ mergeBtn.addEventListener('click', async () => {
             
             const imagesToMerge = uploadedImages.slice(group * mergeType * interval, (group + 1) * mergeType * interval);
             
-            const loadedImages = await loadImages(imagesToMerge);
-            
-            loadedImages.forEach((img, i) => {
+            for (let i = 0; i < imagesToMerge.length; i++) {
+                const img = await createImage(URL.createObjectURL(imagesToMerge[i]));
                 const x = (i % 2) * (imageSize + spacing);
                 const y = Math.floor(i / 2) * (imageSize + spacing);
                 ctx.drawImage(img, x, y, imageSize, imageSize);
-            });
+                console.log(`Drew image ${i + 1} in group ${group + 1}`);
+                addDebugInfo(`Drew image ${i + 1} in group ${group + 1}`);
+            }
             
             // 显示合成结果
             const mergedImage = document.createElement('img');
@@ -138,12 +137,25 @@ mergeBtn.addEventListener('click', async () => {
             mergedImage.alt = `Merged Image ${group + 1}`;
             mergedImage.classList.add('merged-image');
             previewSection.appendChild(mergedImage);
+            console.log(`Merged image ${group + 1} created`);
+            addDebugInfo(`Merged image ${group + 1} created`);
         }
     } catch (error) {
         console.error('Error merging images:', error);
+        addDebugInfo(`Error merging images: ${error.message}`);
         alert('合成图片时出错，请重试');
     }
 });
+
+// 创建图片函数
+function createImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
 
 // 获取下载按钮
 const downloadBtn = document.getElementById('download-btn');
